@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: person_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  backend:
+    build: ./backend
+    container_name: person_backend
+    restart: always
+    ports:
+      - "5001:5000"
+    env_file:
+      - .env
+    depends_on:
+      - db
+
+  frontend:
+    build: ./frontend
+    container_name: person_frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    volumes:
+      
+      - ./frontend/src:/app/src
